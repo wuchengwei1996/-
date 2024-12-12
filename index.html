@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>工作日誌記錄</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f2f2f7;
+      color: #333;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+
+    h1, h2 {
+      color: #333;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .section {
+      margin-bottom: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #ddd;
+      margin: 20px 0;
+    }
+
+    button {
+      background: #34c759;
+      color: white;
+      border-radius: 8px;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+      font-weight: 500;
+    }
+
+    button:hover {
+      background: #2fa54a;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    input[type="date"], input[type="text"], textarea {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+      margin-top: 5px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+
+    #todo-list {
+      list-style-type: none;
+      padding-left: 0;
+      margin: 0;
+    }
+
+    #todo-list li {
+      background: #eee;
+      border-radius: 8px;
+      padding: 8px;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+    }
+
+    #todo-list li input[type="text"] {
+      flex: 1;
+      margin-right: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      padding: 6px;
+    }
+
+    .item {
+      margin-bottom: 15px;
+    }
+
+    .item label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 16px;
+      color: #444;
+    }
+
+    .counter {
+      display: flex;
+      align-items: center;
+    }
+
+    .counter button {
+      width: 36px;
+      height: 36px;
+      font-size: 20px;
+      line-height: 1;
+      margin: 0 5px;
+      padding: 0;
+      border-radius: 50%;
+      background: #34c759;
+    }
+
+    .counter button:hover {
+      background: #2fa54a;
+    }
+
+    .counter span {
+      margin: 0 5px;
+      min-width: 30px;
+      text-align: center;
+      font-size: 16px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .monthly {
+      font-weight: bold;
+      color: #007AFF;
+      margin-left: 10px;
+    }
+
+    #preview-panel {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 260px;
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      z-index: 10;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #preview-panel h2 {
+      font-size: 18px;
+      margin-top: 0;
+      font-weight: 600;
+      color: #333;
+    }
+
+    #preview-text {
+      width: 100%;
+      height: 300px;
+      margin-bottom: 10px;
+      resize: none;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-family: Menlo, Consolas, "Courier New", monospace;
+    }
+
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%; 
+      height: 100%; 
+      overflow: auto; 
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 50px auto; 
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      position: relative;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .close {
+      color: #333;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #666;
+    }
+
+    #history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    #history-table th, #history-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    #history-table th {
+      background: #eee;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>工作日誌記錄</h1>
+
+    <div id="input-area">
+      <div class="section">
+        <h2>日期</h2>
+        <input type="date" id="date">
+      </div>
+
+      <div class="section">
+        <h2>代辦事項</h2>
+        <ul id="todo-list"></ul>
+        <button id="add-todo-btn">新增代辦事項</button>
+      </div>
+
+      <hr>
+
+      <div class="section">
+        <h2>店內體驗拍攝</h2>
+        <div class="item">
+          <label>今日棚內孕婦拍攝場數/ 當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="inPregnant">-</button>
+            <span id="inPregnant-daily">0</span>
+            <button class="plus-btn" data-field="inPregnant">+</button>
+            <span class="monthly" id="inPregnant-monthly">0</span>
+          </div>
+        </div>
+        <div class="item">
+          <label>今日棚內會員拍攝場數/ 當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="inMember">-</button>
+            <span id="inMember-daily">0</span>
+            <button class="plus-btn" data-field="inMember">+</button>
+            <span class="monthly" id="inMember-monthly">0</span>
+          </div>
+        </div>
+        <div class="item">
+          <label>今日棚內離館拍攝場數/ 當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="inLeave">-</button>
+            <span id="inLeave-daily">0</span>
+            <button class="plus-btn" data-field="inLeave">+</button>
+            <span class="monthly" id="inLeave-monthly">0</span>
+          </div>
+        </div>
+        <div class="item">
+          <label>今日棚內離館(2M以上)拍攝場數/ 當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="inLeave2m">-</button>
+            <span id="inLeave2m-daily">0</span>
+            <button class="plus-btn" data-field="inLeave2m">+</button>
+            <span class="monthly" id="inLeave2m-monthly">0</span>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="section">
+        <h2>Cocospa</h2>
+        <div class="item">
+          <label>Cocospa 今日拍攝場數/當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="cocospa">-</button>
+            <span id="cocospa-daily">0</span>
+            <button class="plus-btn" data-field="cocospa">+</button>
+            <span class="monthly" id="cocospa-monthly">0</span>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="section">
+        <h2>付費方案</h2>
+        <div class="item">
+          <label>今日正方案拍攝場數 / 當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="paidRegular">-</button>
+            <span id="paidRegular-daily">0</span>
+            <button class="plus-btn" data-field="paidRegular">+</button>
+            <span class="monthly" id="paidRegular-monthly">0</span>
+          </div>
+        </div>
+        <div class="item">
+          <label>今日正方案跟棚場數 / 當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="paidFollow">-</button>
+            <span id="paidFollow-daily">0</span>
+            <button class="plus-btn" data-field="paidFollow">+</button>
+            <span class="monthly" id="paidFollow-monthly">0</span>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="section">
+        <h2>月中出機</h2>
+        <div class="item">
+          <label>今日新生兒出機/當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="newborn">-</button>
+            <span id="newborn-daily">0</span>
+            <button class="plus-btn" data-field="newborn">+</button>
+            <span class="monthly" id="newborn-monthly">0</span>
+          </div>
+        </div>
+        <div class="item">
+          <label>月中出機/當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="midmonth">-</button>
+            <span id="midmonth-daily">0</span>
+            <button class="plus-btn" data-field="midmonth">+</button>
+            <span class="monthly" id="midmonth-monthly">0</span>
+          </div>
+        </div>
+        <div class="item">
+          <label>月中拍攝(組)/當月累積</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="midmonthGroup">-</button>
+            <span id="midmonthGroup-daily">0</span>
+            <button class="plus-btn" data-field="midmonthGroup">+</button>
+            <span class="monthly" id="midmonthGroup-monthly">0</span>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="section">
+        <h2>一修累積 & MV累積(不計入本月總場)</h2>
+        <div class="item">
+          <label>一修累積(每日/當月)</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="oneFix">-</button>
+            <span id="oneFix-daily">0</span>
+            <button class="plus-btn" data-field="oneFix">+</button>
+            <span class="monthly" id="oneFix-monthly">0</span>
+          </div>
+        </div>
+        <div class="item">
+          <label>MV累積(每日/當月)</label>
+          <div class="counter">
+            <button class="minus-btn" data-field="mv">-</button>
+            <span id="mv-daily">0</span>
+            <button class="plus-btn" data-field="mv">+</button>
+            <span class="monthly" id="mv-monthly">0</span>
+          </div>
+        </div>
+      </div>
+
+      <hr>
+
+      <div class="section btn-group">
+        <button id="save-btn">保存今日工作</button>
+        <button id="history-btn">查看歷史紀錄</button>
+        <button id="reset-month-btn">新月份開始</button>
+      </div>
+
+    </div>
+
+    <div id="display-area">
+      <h2>當月累計與本月總場</h2>
+      <div>本月總場：<span id="monthly-total">0</span></div>
+    </div>
+  </div>
+
+  <div id="preview-panel">
+    <h2>預覽文本</h2>
+    <textarea id="preview-text" readonly></textarea>
+    <button id="copy-btn">一鍵複製</button>
+  </div>
+
+  <div id="history-modal" class="modal">
+    <div id="history-content" class="modal-content">
+      <span id="close-modal" class="close">&times;</span>
+      <h2>歷史紀錄</h2>
+      <table id="history-table">
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const fields = {
+      inPregnant: 0,
+      inMember: 0,
+      inLeave: 0,
+      inLeave2m: 0,
+      cocospa: 0,
+      paidRegular: 0,
+      paidFollow: 0,
+      newborn: 0,
+      midmonth: 0,
+      midmonthGroup: 0,
+      oneFix: 0,
+      mv: 0
+    };
+
+    const fieldNames = {
+      inPregnant: "今日棚內孕婦拍攝場數",
+      inMember: "今日棚內會員拍攝場數",
+      inLeave: "今日棚內離館拍攝場數",
+      inLeave2m: "今日棚內離館(2M以上)拍攝場數",
+      cocospa: "Cocospa 今日拍攝場數",
+      paidRegular: "今日正方案拍攝場數",
+      paidFollow: "今日正方案跟棚場數",
+      newborn: "今日新生兒出機",
+      midmonth: "月中出機",
+      midmonthGroup: "月中拍攝(組)",
+      oneFix: "一修累積",
+      mv: "MV累積"
+    };
+
+    const excludeFromTotal = ["oneFix", "mv"];
+    const todoListEl = document.getElementById('todo-list');
+
+    document.getElementById('date').addEventListener('change', () => {
+      const date = document.getElementById('date').value;
+      if (!date) return;
+      loadDayData(date);
+      updatePreview(true);
+    });
+
+    document.getElementById('add-todo-btn').addEventListener('click', () => addTodoItem(''));
+
+    function addTodoItem(todoText = '') {
+      const li = document.createElement('li');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = '輸入代辦事項';
+      input.value = todoText;
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = '刪除';
+      removeBtn.addEventListener('click', () => {
+        todoListEl.removeChild(li);
+        updatePreview(false);
+      });
+      input.addEventListener('input', () => updatePreview(false));
+      li.appendChild(input);
+      li.appendChild(removeBtn);
+      todoListEl.appendChild(li);
+      updatePreview(false);
+    }
+
+    document.querySelectorAll('.plus-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const field = btn.getAttribute('data-field');
+        fields[field]++;
+        updateDailyDisplay(field);
+        updatePreview(false);
+      });
+    });
+
+    document.querySelectorAll('.minus-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const field = btn.getAttribute('data-field');
+        if (fields[field] > 0) fields[field]--;
+        updateDailyDisplay(field);
+        updatePreview(false);
+      });
+    });
+
+    function updateDailyDisplay(field) {
+      document.getElementById(field + '-daily').textContent = fields[field];
+    }
+
+    document.getElementById('save-btn').addEventListener('click', () => {
+      const date = document.getElementById('date').value;
+      if (!date) {
+        alert('請選擇日期');
+        return;
+      }
+
+      const todos = [];
+      todoListEl.querySelectorAll('li').forEach(li => {
+        const input = li.querySelector('input[type="text"]');
+        if (input && input.value.trim() !== '') {
+          todos.push(input.value.trim());
+        }
+      });
+
+      const todayData = {
+        date: date,
+        todos: todos,
+        data: { ...fields }
+      };
+
+      let workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+      const idx = workLogs.findIndex(log => log.date === date);
+      if (idx >= 0) {
+        workLogs[idx] = todayData;
+      } else {
+        workLogs.push(todayData);
+      }
+      localStorage.setItem('workLogs', JSON.stringify(workLogs));
+
+      alert('今日工作已保存');
+
+      updatePreview(true);
+      copyPreviewText();
+    });
+
+    document.getElementById('reset-month-btn').addEventListener('click', () => {
+      if (confirm('確定要開始新月份嗎？將清除所有紀錄。')) {
+        localStorage.removeItem('workLogs');
+        for (let f in fields) {
+          fields[f] = 0;
+          updateDailyDisplay(f);
+        }
+        todoListEl.innerHTML = '';
+        updatePreview(true);
+        alert('已清除紀錄，開始新月份的統計。');
+      }
+    });
+
+    function loadDayData(date) {
+      const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+      const log = workLogs.find(l => l.date === date);
+      if (log) {
+        for (let f in fields) {
+          fields[f] = log.data[f] || 0;
+          updateDailyDisplay(f);
+        }
+        todoListEl.innerHTML = '';
+        log.todos.forEach(t => {
+          addTodoItem(t);
+        });
+      } else {
+        for (let f in fields) {
+          fields[f] = 0;
+          updateDailyDisplay(f);
+        }
+        todoListEl.innerHTML = '';
+      }
+    }
+
+    function calculateMonthlyTotals() {
+      const monthlyTotals = {
+        inPregnant: 0,
+        inMember: 0,
+        inLeave: 0,
+        inLeave2m: 0,
+        cocospa: 0,
+        paidRegular: 0,
+        paidFollow: 0,
+        newborn: 0,
+        midmonth: 0,
+        midmonthGroup: 0,
+        oneFix: 0,
+        mv: 0
+      };
+
+      const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+      const currentMonth = new Date().getMonth();
+
+      workLogs.forEach(log => {
+        const logDate = new Date(log.date);
+        if (logDate.getMonth() === currentMonth) {
+          for (let f in monthlyTotals) {
+            monthlyTotals[f] += (log.data[f] || 0);
+          }
+        }
+      });
+
+      let total = 0;
+      for (let f in monthlyTotals) {
+        if (!excludeFromTotal.includes(f)) {
+          total += monthlyTotals[f];
+        }
+      }
+
+      return { monthlyTotals, total };
+    }
+
+    function updatePreview(saved) {
+      const date = document.getElementById('date').value || '未選擇日期';
+      const todos = [];
+      todoListEl.querySelectorAll('li').forEach(li => {
+        const input = li.querySelector('input[type="text"]');
+        if (input && input.value.trim() !== '') {
+          todos.push(input.value.trim());
+        }
+      });
+
+      let result = {monthlyTotals: {}, total: 0};
+      if (saved) {
+        result = calculateMonthlyTotals();
+        displayMonthlyStats(result.monthlyTotals, result.total);
+      } else {
+        result.monthlyTotals = readMonthlyFromUI();
+        result.total = parseInt(document.getElementById('monthly-total').textContent) || 0;
+      }
+
+      const monthlyInfo = result.monthlyTotals;
+      const total = result.total;
+
+      let text = `${date}\n台南營業部/攝影課/浣熊\n\n`;
+
+      text += `代辦事項：\n`;
+      if (todos.length > 0) {
+        todos.forEach((t, i) => {
+          text += `${i+1}. ${t}\n`;
+        });
+      } else {
+        text += `無\n`;
+      }
+
+      function line(f) {
+        return `${fieldNames[f]}${fields[f]}/ 當月累積${(monthlyInfo[f]||0)}`;
+      }
+
+      text += `\n店內體驗拍攝：\n`;
+      text += line('inPregnant') + '\n';
+      text += line('inMember') + '\n';
+      text += line('inLeave') + '\n';
+      text += line('inLeave2m') + '\n';
+
+      text += `\n${fieldNames.cocospa}${fields.cocospa}/ 當月累積${(monthlyInfo.cocospa||0)}\n`;
+
+      text += `\n付費方案：\n`;
+      text += line('paidRegular') + '\n';
+      text += line('paidFollow') + '\n';
+
+      text += `\n月中出機：\n`;
+      text += line('newborn') + '\n';
+      text += line('midmonth') + '\n';
+      text += line('midmonthGroup') + '\n';
+
+      text += `\n${fieldNames.oneFix}${fields.oneFix}/ 當月累積${(monthlyInfo.oneFix||0)}\n`;
+      text += `${fieldNames.mv}${fields.mv}/ 當月累積${(monthlyInfo.mv||0)}\n`;
+
+      text += `\n本月總場：${total}\n`;
+
+      document.getElementById('preview-text').value = text;
+    }
+
+    function readMonthlyFromUI() {
+      const ids = Object.keys(fields);
+      let monthlyData = {};
+      ids.forEach(f => {
+        const el = document.getElementById(f+'-monthly');
+        monthlyData[f] = el ? parseInt(el.textContent)||0 : 0;
+      });
+      return monthlyData;
+    }
+
+    function displayMonthlyStats(monthlyTotals, total) {
+      for (let f in monthlyTotals) {
+        const monthlyEl = document.getElementById(f + '-monthly');
+        if (monthlyEl) {
+          monthlyEl.textContent = monthlyTotals[f];
+        }
+      }
+      document.getElementById('monthly-total').textContent = total;
+    }
+
+    function copyPreviewText() {
+      const previewText = document.getElementById('preview-text');
+      previewText.select();
+      document.execCommand('copy');
+      alert('已複製更新後的文本至剪貼簿');
+    }
+
+    document.getElementById('history-btn').addEventListener('click', showHistory);
+    document.getElementById('close-modal').addEventListener('click', closeHistoryModal);
+
+    function showHistory() {
+      const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+      const tbody = document.querySelector('#history-table tbody');
+      tbody.innerHTML = '';
+
+      workLogs.forEach(log => {
+        const tr = document.createElement('tr');
+        const dateTd = document.createElement('td');
+        dateTd.textContent = log.date;
+        const actionTd = document.createElement('td');
+        const loadBtn = document.createElement('button');
+        loadBtn.textContent = '載入';
+        loadBtn.addEventListener('click', () => {
+          loadHistoryData(log.date);
+          closeHistoryModal();
+        });
+        actionTd.appendChild(loadBtn);
+        tr.appendChild(dateTd);
+        tr.appendChild(actionTd);
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('history-modal').style.display = 'block';
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('history-modal').style.display = 'none';
+    }
+
+    function loadHistoryData(date) {
+      const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+      const log = workLogs.find(l => l.date === date);
+      if (!log) return;
+
+      document.getElementById('date').value = log.date;
+      todoListEl.innerHTML = '';
+      log.todos.forEach(t => {
+        addTodoItem(t);
+      });
+
+      for (let f in fields) {
+        fields[f] = log.data[f] || 0;
+        updateDailyDisplay(f);
+      }
+
+      updatePreview(true);
+    }
+
+    // 初次載入
+    updatePreview(true);
+  </script>
+</body>
+</html>
