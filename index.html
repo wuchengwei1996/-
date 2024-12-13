@@ -42,13 +42,14 @@
     button {
       background: #34c759;
       color: white;
-      border-radius: 8px;
+      border-radius: 5px; /* 稍有圓角的方形按鍵 */
       border: none;
       padding: 10px 15px;
       cursor: pointer;
       font-size: 16px;
-      margin-right: 10px;
       font-weight: 500;
+      width: 100%;
+      margin-bottom: 10px; /* 增加按鍵間距 */
     }
     button:hover {
       background: #2fa54a;
@@ -56,7 +57,7 @@
 
     .btn-group {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column; /* 垂直排列三個按鈕 */
     }
 
     input[type="date"], input[type="text"], textarea {
@@ -105,7 +106,6 @@
       color: #444;
     }
 
-    /* 數字選擇列 */
     .number-choices {
       display: flex;
       flex-wrap: wrap;
@@ -120,7 +120,7 @@
       font-size: 16px;
       font-weight: 500;
       margin-right: 0;
-      border-radius: 50%;
+      border-radius: 5px; /* 數字按鈕也採用略有圓角的方形 */
     }
 
     .monthly {
@@ -143,7 +143,6 @@
       transition: transform 0.3s ease;
     }
 
-    /* 90% 而非 100%，讓按鈕部分露出 */
     #preview-panel.collapsed {
       transform: translateX(90%);
     }
@@ -260,10 +259,6 @@
       </div>
 
       <hr>
-
-      <!-- 範例以 今日棚內孕婦拍攝場數為例，其餘項目同理 -->
-      <!-- 將加減按鈕改為1~10的按鈕，以"今日棚內孕婦拍攝場數"為範例 -->
-      <!-- 您可為每個項目都這樣做，下面已為所有項目同樣處理 -->
       <div class="section">
         <h2>店內體驗拍攝</h2>
         <div class="item">
@@ -389,17 +384,27 @@
 
   <script>
     const fields={inPregnant:0,inMember:0,inLeave:0,inLeave2m:0,cocospa:0,paidRegular:0,paidFollow:0,newborn:0,midmonth:0,midmonthGroup:0,oneFix:0,mv:0};
-    const fieldNames={inPregnant:"今日棚內孕婦拍攝場數",inMember:"今日棚內會員拍攝場數",inLeave:"今日棚內離館拍攝場數",inLeave2m:"今日棚內離館(2M以上)拍攝場數",
-      cocospa:"Cocospa 今日拍攝場數",paidRegular:"今日正方案拍攝場數",paidFollow:"今日正方案跟棚場數",newborn:"今日新生兒出機",midmonth:"月中出機",
-      midmonthGroup:"月中拍攝(組)",oneFix:"一修累積",mv:"MV累積"};
+    const fieldNames={inPregnant:"今日棚內孕婦拍攝場數",inMember:"今日棚內會員拍攝場數",
+      inLeave:"今日棚內離館拍攝場數",inLeave2m:"今日棚內離館(2M以上)拍攝場數",cocospa:"Cocospa 今日拍攝場數",
+      paidRegular:"今日正方案拍攝場數",paidFollow:"今日正方案跟棚場數",
+      newborn:"今日新生兒出機",midmonth:"月中出機",midmonthGroup:"月中拍攝(組)",
+      oneFix:"一修累積",mv:"MV累積"};
     const excludeFromTotal=["oneFix","mv"];
     const todoListEl=document.getElementById('todo-list');
 
-    // 建立1~10數字按鈕
-    const numberButtons=[1,2,3,4,5,6,7,8,9,10];
+    function getNumberRangeForField(f){
+      const catA=["inPregnant","inMember","inLeave","inLeave2m","cocospa","paidRegular","paidFollow"]; // 1到4
+      const catB=["newborn","midmonth","midmonthGroup"]; // 1到6
+      if(catA.includes(f)) return [1,4];
+      if(catB.includes(f)) return [1,6];
+      return [1,10]; // 一修 & MV
+    }
+
+    // 建立數字按鈕
     document.querySelectorAll('.number-choices').forEach(container=>{
       const field=container.getAttribute('data-field');
-      numberButtons.forEach(num=>{
+      const range=getNumberRangeForField(field);
+      for(let num=range[0];num<=range[1];num++){
         const btn=document.createElement('button');
         btn.textContent=num;
         btn.addEventListener('click',()=>{
@@ -408,7 +413,7 @@
           updatePreview(false);
         });
         container.appendChild(btn);
-      });
+      }
     });
 
     document.getElementById('date').addEventListener('change',()=>{
@@ -634,7 +639,6 @@
       updatePreview(true);
     }
 
-    // 預覽面板收合控制
     const previewPanel=document.getElementById('preview-panel');
     const toggleBtn=document.getElementById('toggle-preview-btn');
     toggleBtn.addEventListener('click',()=>{
@@ -642,7 +646,6 @@
       toggleBtn.textContent=previewPanel.classList.contains('collapsed')?'‹':'›';
     });
 
-    // 初次載入
     updatePreview(true);
   </script>
 </body>
