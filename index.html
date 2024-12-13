@@ -50,7 +50,6 @@
       margin-right: 10px;
       font-weight: 500;
     }
-
     button:hover {
       background: #2fa54a;
     }
@@ -106,33 +105,22 @@
       color: #444;
     }
 
-    .counter {
+    /* 數字選擇列 */
+    .number-choices {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
     }
 
-    .counter button {
-      width: 36px;
-      height: 36px;
-      font-size: 20px;
-      line-height: 1;
-      margin: 0 5px;
+    .number-choices button {
+      width: 40px;
+      height: 40px;
       padding: 0;
-      border-radius: 50%;
-      background: #34c759;
-    }
-
-    .counter button:hover {
-      background: #2fa54a;
-    }
-
-    .counter span {
-      margin: 0 5px;
-      min-width: 30px;
-      text-align: center;
       font-size: 16px;
-      color: #333;
       font-weight: 500;
+      margin-right: 0;
+      border-radius: 50%;
     }
 
     .monthly {
@@ -155,11 +143,11 @@
       transition: transform 0.3s ease;
     }
 
+    /* 90% 而非 100%，讓按鈕部分露出 */
     #preview-panel.collapsed {
-      transform: translateX(100%);
+      transform: translateX(90%);
     }
 
-    /* 調整標題，使收合按鈕在左側 */
     #preview-panel h2 {
       font-size: 18px;
       margin-top: 0;
@@ -180,7 +168,7 @@
       line-height: 1;
       padding: 0;
       cursor: pointer;
-      margin-right: 10px; /* 放在標題左側，故改margin-right */
+      margin-right: 10px;
     }
 
     #toggle-preview-btn:hover {
@@ -260,7 +248,6 @@
     <h1>工作日誌記錄</h1>
 
     <div id="input-area">
-      <!-- 與前版相同的輸入區塊... 略過重註解 -->
       <div class="section">
         <h2>日期</h2>
         <input type="date" id="date">
@@ -274,45 +261,30 @@
 
       <hr>
 
+      <!-- 範例以 今日棚內孕婦拍攝場數為例，其餘項目同理 -->
+      <!-- 將加減按鈕改為1~10的按鈕，以"今日棚內孕婦拍攝場數"為範例 -->
+      <!-- 您可為每個項目都這樣做，下面已為所有項目同樣處理 -->
       <div class="section">
         <h2>店內體驗拍攝</h2>
-        <!-- 項目略，同前版 -->
-        <!-- 同樣加減場數的結構已在上方程式中提供，不再重述註解 -->
         <div class="item">
           <label>今日棚內孕婦拍攝場數/ 當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="inPregnant">-</button>
-            <span id="inPregnant-daily">0</span>
-            <button class="plus-btn" data-field="inPregnant">+</button>
-            <span class="monthly" id="inPregnant-monthly">0</span>
-          </div>
+          <span id="inPregnant-daily">0</span><span class="monthly" id="inPregnant-monthly">0</span>
+          <div class="number-choices" data-field="inPregnant"></div>
         </div>
         <div class="item">
           <label>今日棚內會員拍攝場數/ 當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="inMember">-</button>
-            <span id="inMember-daily">0</span>
-            <button class="plus-btn" data-field="inMember">+</button>
-            <span class="monthly" id="inMember-monthly">0</span>
-          </div>
+          <span id="inMember-daily">0</span><span class="monthly" id="inMember-monthly">0</span>
+          <div class="number-choices" data-field="inMember"></div>
         </div>
         <div class="item">
           <label>今日棚內離館拍攝場數/ 當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="inLeave">-</button>
-            <span id="inLeave-daily">0</span>
-            <button class="plus-btn" data-field="inLeave">+</button>
-            <span class="monthly" id="inLeave-monthly">0</span>
-          </div>
+          <span id="inLeave-daily">0</span><span class="monthly" id="inLeave-monthly">0</span>
+          <div class="number-choices" data-field="inLeave"></div>
         </div>
         <div class="item">
           <label>今日棚內離館(2M以上)拍攝場數/ 當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="inLeave2m">-</button>
-            <span id="inLeave2m-daily">0</span>
-            <button class="plus-btn" data-field="inLeave2m">+</button>
-            <span class="monthly" id="inLeave2m-monthly">0</span>
-          </div>
+          <span id="inLeave2m-daily">0</span><span class="monthly" id="inLeave2m-monthly">0</span>
+          <div class="number-choices" data-field="inLeave2m"></div>
         </div>
       </div>
 
@@ -321,12 +293,8 @@
         <h2>Cocospa</h2>
         <div class="item">
           <label>Cocospa 今日拍攝場數/當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="cocospa">-</button>
-            <span id="cocospa-daily">0</span>
-            <button class="plus-btn" data-field="cocospa">+</button>
-            <span class="monthly" id="cocospa-monthly">0</span>
-          </div>
+          <span id="cocospa-daily">0</span><span class="monthly" id="cocospa-monthly">0</span>
+          <div class="number-choices" data-field="cocospa"></div>
         </div>
       </div>
 
@@ -335,21 +303,13 @@
         <h2>付費方案</h2>
         <div class="item">
           <label>今日正方案拍攝場數 / 當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="paidRegular">-</button>
-            <span id="paidRegular-daily">0</span>
-            <button class="plus-btn" data-field="paidRegular">+</button>
-            <span class="monthly" id="paidRegular-monthly">0</span>
-          </div>
+          <span id="paidRegular-daily">0</span><span class="monthly" id="paidRegular-monthly">0</span>
+          <div class="number-choices" data-field="paidRegular"></div>
         </div>
         <div class="item">
           <label>今日正方案跟棚場數 / 當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="paidFollow">-</button>
-            <span id="paidFollow-daily">0</span>
-            <button class="plus-btn" data-field="paidFollow">+</button>
-            <span class="monthly" id="paidFollow-monthly">0</span>
-          </div>
+          <span id="paidFollow-daily">0</span><span class="monthly" id="paidFollow-monthly">0</span>
+          <div class="number-choices" data-field="paidFollow"></div>
         </div>
       </div>
 
@@ -358,30 +318,18 @@
         <h2>月中出機</h2>
         <div class="item">
           <label>今日新生兒出機/當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="newborn">-</button>
-            <span id="newborn-daily">0</span>
-            <button class="plus-btn" data-field="newborn">+</button>
-            <span class="monthly" id="newborn-monthly">0</span>
-          </div>
+          <span id="newborn-daily">0</span><span class="monthly" id="newborn-monthly">0</span>
+          <div class="number-choices" data-field="newborn"></div>
         </div>
         <div class="item">
           <label>月中出機/當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="midmonth">-</button>
-            <span id="midmonth-daily">0</span>
-            <button class="plus-btn" data-field="midmonth">+</button>
-            <span class="monthly" id="midmonth-monthly">0</span>
-          </div>
+          <span id="midmonth-daily">0</span><span class="monthly" id="midmonth-monthly">0</span>
+          <div class="number-choices" data-field="midmonth"></div>
         </div>
         <div class="item">
           <label>月中拍攝(組)/當月累積</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="midmonthGroup">-</button>
-            <span id="midmonthGroup-daily">0</span>
-            <button class="plus-btn" data-field="midmonthGroup">+</button>
-            <span class="monthly" id="midmonthGroup-monthly">0</span>
-          </div>
+          <span id="midmonthGroup-daily">0</span><span class="monthly" id="midmonthGroup-monthly">0</span>
+          <div class="number-choices" data-field="midmonthGroup"></div>
         </div>
       </div>
 
@@ -390,21 +338,13 @@
         <h2>一修累積 & MV累積(不計入本月總場)</h2>
         <div class="item">
           <label>一修累積(每日/當月)</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="oneFix">-</button>
-            <span id="oneFix-daily">0</span>
-            <button class="plus-btn" data-field="oneFix">+</button>
-            <span class="monthly" id="oneFix-monthly">0</span>
-          </div>
+          <span id="oneFix-daily">0</span><span class="monthly" id="oneFix-monthly">0</span>
+          <div class="number-choices" data-field="oneFix"></div>
         </div>
         <div class="item">
           <label>MV累積(每日/當月)</label>
-          <div class="counter">
-            <button class="minus-btn" data-field="mv">-</button>
-            <span id="mv-daily">0</span>
-            <button class="plus-btn" data-field="mv">+</button>
-            <span class="monthly" id="mv-monthly">0</span>
-          </div>
+          <span id="mv-daily">0</span><span class="monthly" id="mv-monthly">0</span>
+          <div class="number-choices" data-field="mv"></div>
         </div>
       </div>
 
@@ -414,7 +354,6 @@
         <button id="history-btn">查看歷史紀錄</button>
         <button id="reset-month-btn">新月份開始</button>
       </div>
-
     </div>
 
     <div id="display-area">
@@ -449,13 +388,28 @@
   </div>
 
   <script>
-    // 與先前相同的程式碼, 僅略過過多註解
     const fields={inPregnant:0,inMember:0,inLeave:0,inLeave2m:0,cocospa:0,paidRegular:0,paidFollow:0,newborn:0,midmonth:0,midmonthGroup:0,oneFix:0,mv:0};
     const fieldNames={inPregnant:"今日棚內孕婦拍攝場數",inMember:"今日棚內會員拍攝場數",inLeave:"今日棚內離館拍攝場數",inLeave2m:"今日棚內離館(2M以上)拍攝場數",
       cocospa:"Cocospa 今日拍攝場數",paidRegular:"今日正方案拍攝場數",paidFollow:"今日正方案跟棚場數",newborn:"今日新生兒出機",midmonth:"月中出機",
       midmonthGroup:"月中拍攝(組)",oneFix:"一修累積",mv:"MV累積"};
     const excludeFromTotal=["oneFix","mv"];
     const todoListEl=document.getElementById('todo-list');
+
+    // 建立1~10數字按鈕
+    const numberButtons=[1,2,3,4,5,6,7,8,9,10];
+    document.querySelectorAll('.number-choices').forEach(container=>{
+      const field=container.getAttribute('data-field');
+      numberButtons.forEach(num=>{
+        const btn=document.createElement('button');
+        btn.textContent=num;
+        btn.addEventListener('click',()=>{
+          fields[field]=num;
+          updateDailyDisplay(field);
+          updatePreview(false);
+        });
+        container.appendChild(btn);
+      });
+    });
 
     document.getElementById('date').addEventListener('change',()=>{
       const date=document.getElementById('date').value;
@@ -481,24 +435,6 @@
       todoListEl.appendChild(li);
       updatePreview(false);
     }
-
-    document.querySelectorAll('.plus-btn').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const field=btn.getAttribute('data-field');
-        fields[field]++;
-        updateDailyDisplay(field);
-        updatePreview(false);
-      });
-    });
-
-    document.querySelectorAll('.minus-btn').forEach(btn=>{
-      btn.addEventListener('click',()=>{
-        const field=btn.getAttribute('data-field');
-        if(fields[field]>0)fields[field]--;
-        updateDailyDisplay(field);
-        updatePreview(false);
-      });
-    });
 
     function updateDailyDisplay(field){
       document.getElementById(field+'-daily').textContent=fields[field];
@@ -567,7 +503,6 @@
           total+=monthlyTotals[f];
         }
       }
-
       return {monthlyTotals,total};
     }
 
@@ -707,6 +642,7 @@
       toggleBtn.textContent=previewPanel.classList.contains('collapsed')?'‹':'›';
     });
 
+    // 初次載入
     updatePreview(true);
   </script>
 </body>
