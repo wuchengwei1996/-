@@ -417,20 +417,25 @@
       mv: "MV累積"
     };
 
-    // 設定哪些欄位「不」計入本月總場
+    // 這裡指定「一修累積 (oneFix)」與「MV累積 (mv)」不計入本月總場
     const excludeFromTotal = ["oneFix", "mv"];
 
     // 代辦清單 <ul> element
     const todoListEl = document.getElementById('todo-list');
 
-    // 根據欄位決定可選的按鈕範圍
+    // 根據欄位決定可選的按鈕範圍，包含「0」的選項
     function getNumberRangeForField(f) {
-      const catA = ["inPregnant","inMember","inLeave","inLeave2m","cocospa","paidRegular","paidFollow"]; // 1 到 4
-      const catB = ["newborn","midmonth","midmonthGroup"]; // 1 到 6
-      if (catA.includes(f)) return [1, 4];
-      if (catB.includes(f)) return [1, 6];
-      // 預設 1 到 10，給一修 & MV
-      return [1, 10];
+      // catA：原本 1~4，現在改為 0~4
+      const catA = [
+        "inPregnant","inMember","inLeave","inLeave2m",
+        "cocospa","paidRegular","paidFollow"
+      ];
+      // catB：原本 1~6，現在改為 0~6
+      const catB = ["newborn","midmonth","midmonthGroup"];
+      if (catA.includes(f)) return [0, 4];
+      if (catB.includes(f)) return [0, 6];
+      // 其他欄位 (一修 & MV) 用 0~10
+      return [0, 10];
     }
 
     // 生成數字按鈕
@@ -501,7 +506,7 @@
       }
     }
 
-    // 計算當月累積
+    // 計算當月累積 (會排除 excludeFromTotal 裡的欄位)
     function calculateMonthlyTotals(refMonth) {
       const monthlyTotals = {
         inPregnant: 0,
@@ -520,10 +525,9 @@
 
       const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
 
-      // 遍歷所有紀錄
+      // 遍歷所有紀錄，若 logDate 的月份 == refMonth，才計入加總
       workLogs.forEach(log => {
         const logDate = new Date(log.date);
-        // 若 logDate 的月份 == refMonth，即計入加總
         if (logDate.getMonth() === refMonth) {
           for (let f in monthlyTotals) {
             monthlyTotals[f] += (log.data[f] || 0);
