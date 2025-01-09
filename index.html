@@ -357,6 +357,7 @@
     </div>
   </div>
 
+  <!-- 預覽面板 -->
   <div id="preview-panel" class="collapsed">
     <h2>
       <button id="toggle-preview-btn">‹</button>
@@ -366,6 +367,7 @@
     <button id="copy-btn">一鍵複製</button>
   </div>
 
+  <!-- 歷史紀錄 Modal -->
   <div id="history-modal" class="modal">
     <div id="history-content" class="modal-content">
       <span id="close-modal" class="close">&times;</span>
@@ -383,32 +385,64 @@
   </div>
 
   <script>
-    const fields={inPregnant:0,inMember:0,inLeave:0,inLeave2m:0,cocospa:0,paidRegular:0,paidFollow:0,newborn:0,midmonth:0,midmonthGroup:0,oneFix:0,mv:0};
-    const fieldNames={inPregnant:"今日棚內孕婦拍攝場數",inMember:"今日棚內會員拍攝場數",
-      inLeave:"今日棚內離館拍攝場數",inLeave2m:"今日棚內離館(2M以上)拍攝場數",cocospa:"Cocospa 今日拍攝場數",
-      paidRegular:"今日正方案拍攝場數",paidFollow:"今日正方案跟棚場數",
-      newborn:"今日新生兒出機",midmonth:"月中出機",midmonthGroup:"月中拍攝(組)",
-      oneFix:"一修累積",mv:"MV累積"};
-    const excludeFromTotal=["oneFix","mv"];
-    const todoListEl=document.getElementById('todo-list');
+    // 各欄位的「今日」值暫存在 fields 裡
+    const fields = {
+      inPregnant: 0,
+      inMember: 0,
+      inLeave: 0,
+      inLeave2m: 0,
+      cocospa: 0,
+      paidRegular: 0,
+      paidFollow: 0,
+      newborn: 0,
+      midmonth: 0,
+      midmonthGroup: 0,
+      oneFix: 0,
+      mv: 0
+    };
 
-    function getNumberRangeForField(f){
-      const catA=["inPregnant","inMember","inLeave","inLeave2m","cocospa","paidRegular","paidFollow"]; // 1到4
-      const catB=["newborn","midmonth","midmonthGroup"]; // 1到6
-      if(catA.includes(f)) return [1,4];
-      if(catB.includes(f)) return [1,6];
-      return [1,10]; // 一修 & MV
+    // 欄位對應顯示文字
+    const fieldNames = {
+      inPregnant: "今日棚內孕婦拍攝場數",
+      inMember: "今日棚內會員拍攝場數",
+      inLeave: "今日棚內離館拍攝場數",
+      inLeave2m: "今日棚內離館(2M以上)拍攝場數",
+      cocospa: "Cocospa 今日拍攝場數",
+      paidRegular: "今日正方案拍攝場數",
+      paidFollow: "今日正方案跟棚場數",
+      newborn: "今日新生兒出機",
+      midmonth: "月中出機",
+      midmonthGroup: "月中拍攝(組)",
+      oneFix: "一修累積",
+      mv: "MV累積"
+    };
+
+    // 設定哪些欄位「不」計入本月總場
+    const excludeFromTotal = ["oneFix", "mv"];
+
+    // 代辦清單 <ul> element
+    const todoListEl = document.getElementById('todo-list');
+
+    // 根據欄位決定可選的按鈕範圍
+    function getNumberRangeForField(f) {
+      const catA = ["inPregnant","inMember","inLeave","inLeave2m","cocospa","paidRegular","paidFollow"]; // 1 到 4
+      const catB = ["newborn","midmonth","midmonthGroup"]; // 1 到 6
+      if (catA.includes(f)) return [1, 4];
+      if (catB.includes(f)) return [1, 6];
+      // 預設 1 到 10，給一修 & MV
+      return [1, 10];
     }
 
-    // 建立數字按鈕
-    document.querySelectorAll('.number-choices').forEach(container=>{
-      const field=container.getAttribute('data-field');
-      const range=getNumberRangeForField(field);
-      for(let num=range[0];num<=range[1];num++){
-        const btn=document.createElement('button');
-        btn.textContent=num;
-        btn.addEventListener('click',()=>{
-          fields[field]=num;
+    // 生成數字按鈕
+    document.querySelectorAll('.number-choices').forEach(container => {
+      const field = container.getAttribute('data-field');
+      const [start, end] = getNumberRangeForField(field);
+
+      for (let num = start; num <= end; num++) {
+        const btn = document.createElement('button');
+        btn.textContent = num;
+        btn.addEventListener('click', () => {
+          fields[field] = num;
           updateDailyDisplay(field);
           updatePreview(false);
         });
@@ -416,236 +450,331 @@
       }
     });
 
-    document.getElementById('date').addEventListener('change',()=>{
-      const date=document.getElementById('date').value;
-      if(!date)return;
+    // 選擇日期時，載入資料
+    document.getElementById('date').addEventListener('change', () => {
+      const date = document.getElementById('date').value;
+      if (!date) return;
       loadDayData(date);
       updatePreview(true);
     });
 
-    document.getElementById('add-todo-btn').addEventListener('click',()=>addTodoItem(''));
+    // 新增代辦事項
+    document.getElementById('add-todo-btn').addEventListener('click', () => addTodoItem(''));
 
-    function addTodoItem(todoText=''){
-      const li=document.createElement('li');
-      const input=document.createElement('input');
-      input.type='text';input.placeholder='輸入代辦事項';input.value=todoText;
-      const removeBtn=document.createElement('button');
-      removeBtn.textContent='刪除';
-      removeBtn.addEventListener('click',()=>{
+    function addTodoItem(todoText = '') {
+      const li = document.createElement('li');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = '輸入代辦事項';
+      input.value = todoText;
+
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = '刪除';
+
+      removeBtn.addEventListener('click', () => {
         todoListEl.removeChild(li);
         updatePreview(false);
       });
-      input.addEventListener('input',()=>updatePreview(false));
-      li.appendChild(input);li.appendChild(removeBtn);
+
+      input.addEventListener('input', () => updatePreview(false));
+
+      li.appendChild(input);
+      li.appendChild(removeBtn);
       todoListEl.appendChild(li);
+
       updatePreview(false);
     }
 
-    function updateDailyDisplay(field){
-      document.getElementById(field+'-daily').textContent=fields[field];
+    // 更新「每日」欄位顯示
+    function updateDailyDisplay(field) {
+      document.getElementById(field + '-daily').textContent = fields[field];
     }
 
-    document.getElementById('save-btn').addEventListener('click',()=>{
-      const date=document.getElementById('date').value;
-      if(!date){alert('請選擇日期');return;}
-      const todos=[];
-      todoListEl.querySelectorAll('li').forEach(li=>{
-        const input=li.querySelector('input[type="text"]');
-        if(input&&input.value.trim()!==''){todos.push(input.value.trim());}
+    // 取得當前要計算的月份 (若有選擇日期，則以所選日期的月份為準；否則用系統時間)
+    function getReferenceMonth() {
+      const dateVal = document.getElementById('date').value;
+      if (!dateVal) {
+        // 如果未選日期，就用系統時間當前月份
+        return (new Date()).getMonth();
+      } else {
+        return (new Date(dateVal)).getMonth();
+      }
+    }
+
+    // 計算當月累積
+    function calculateMonthlyTotals(refMonth) {
+      const monthlyTotals = {
+        inPregnant: 0,
+        inMember: 0,
+        inLeave: 0,
+        inLeave2m: 0,
+        cocospa: 0,
+        paidRegular: 0,
+        paidFollow: 0,
+        newborn: 0,
+        midmonth: 0,
+        midmonthGroup: 0,
+        oneFix: 0,
+        mv: 0
+      };
+
+      const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+
+      // 遍歷所有紀錄
+      workLogs.forEach(log => {
+        const logDate = new Date(log.date);
+        // 若 logDate 的月份 == refMonth，即計入加總
+        if (logDate.getMonth() === refMonth) {
+          for (let f in monthlyTotals) {
+            monthlyTotals[f] += (log.data[f] || 0);
+          }
+        }
       });
 
-      const todayData={date:date,todos:todos,data:{...fields}};
-      let workLogs=JSON.parse(localStorage.getItem('workLogs'))||[];
-      const idx=workLogs.findIndex(log=>log.date===date);
-      if(idx>=0){workLogs[idx]=todayData;}else{workLogs.push(todayData);}
-      localStorage.setItem('workLogs',JSON.stringify(workLogs));
+      // 計算「本月總場」(排除一修、MV等不計入總場的欄位)
+      let total = 0;
+      for (let f in monthlyTotals) {
+        if (!excludeFromTotal.includes(f)) {
+          total += monthlyTotals[f];
+        }
+      }
+
+      return { monthlyTotals, total };
+    }
+
+    // 讀取 UI 上的「當月累積」 (若還未存檔，暫時用這個)
+    function readMonthlyFromUI() {
+      const ids = Object.keys(fields);
+      let monthlyData = {};
+      ids.forEach(f => {
+        const el = document.getElementById(f + '-monthly');
+        monthlyData[f] = el ? parseInt(el.textContent) || 0 : 0;
+      });
+      return monthlyData;
+    }
+
+    // 顯示當月累積資訊
+    function displayMonthlyStats(monthlyTotals, total) {
+      for (let f in monthlyTotals) {
+        const monthlyEl = document.getElementById(f + '-monthly');
+        if (monthlyEl) monthlyEl.textContent = monthlyTotals[f];
+      }
+      document.getElementById('monthly-total').textContent = total;
+    }
+
+    // 更新預覽文本
+    function updatePreview(saved) {
+      const date = document.getElementById('date').value || '未選擇日期';
+
+      // 收集代辦事項
+      const todos = [];
+      todoListEl.querySelectorAll('li').forEach(li => {
+        const input = li.querySelector('input[type="text"]');
+        if (input && input.value.trim() !== '') {
+          todos.push(input.value.trim());
+        }
+      });
+
+      // 若已存檔，重新計算；否則先從 UI 讀取
+      let result = { monthlyTotals: {}, total: 0 };
+      if (saved) {
+        const referenceMonth = getReferenceMonth();
+        result = calculateMonthlyTotals(referenceMonth);
+        displayMonthlyStats(result.monthlyTotals, result.total);
+      } else {
+        result.monthlyTotals = readMonthlyFromUI();
+        result.total = parseInt(document.getElementById('monthly-total').textContent) || 0;
+      }
+
+      const monthlyInfo = result.monthlyTotals;
+      const total = result.total;
+
+      // 組合預覽文字
+      let text = `${date}\n台南營業部/攝影課/浣熊\n\n`;
+      text += `代辦事項：\n`;
+      if (todos.length > 0) {
+        todos.forEach((t, i) => {
+          text += `${i + 1}. ${t}\n`;
+        });
+      } else {
+        text += `無\n`;
+      }
+
+      function line(f) {
+        return `${fieldNames[f]}${fields[f]}/ 當月累積${(monthlyInfo[f] || 0)}`;
+      }
+
+      text += `\n店內體驗拍攝：\n`;
+      text += line('inPregnant') + '\n';
+      text += line('inMember') + '\n';
+      text += line('inLeave') + '\n';
+      text += line('inLeave2m') + '\n';
+
+      text += `\n${fieldNames.cocospa}${fields.cocospa}/ 當月累積${(monthlyInfo.cocospa || 0)}\n`;
+
+      text += `\n付費方案：\n`;
+      text += line('paidRegular') + '\n';
+      text += line('paidFollow') + '\n';
+
+      text += `\n月中出機：\n`;
+      text += line('newborn') + '\n';
+      text += line('midmonth') + '\n';
+      text += line('midmonthGroup') + '\n';
+
+      text += `\n${fieldNames.oneFix}${fields.oneFix}/ 當月累積${(monthlyInfo.oneFix || 0)}\n`;
+      text += `${fieldNames.mv}${fields.mv}/ 當月累積${(monthlyInfo.mv || 0)}\n`;
+
+      text += `\n本月總場：${total}\n`;
+
+      document.getElementById('preview-text').value = text;
+    }
+
+    // 複製預覽文本 (改用 Clipboard API)
+    function copyPreviewText() {
+      const previewText = document.getElementById('preview-text').value;
+      navigator.clipboard.writeText(previewText)
+        .then(() => {
+          alert('已複製更新後的文本至剪貼簿');
+        })
+        .catch(err => {
+          console.error('複製失敗', err);
+        });
+    }
+
+    // 保存
+    document.getElementById('save-btn').addEventListener('click', () => {
+      const date = document.getElementById('date').value;
+      if (!date) {
+        alert('請選擇日期');
+        return;
+      }
+      // 收集代辦
+      const todos = [];
+      todoListEl.querySelectorAll('li').forEach(li => {
+        const input = li.querySelector('input[type="text"]');
+        if (input && input.value.trim() !== '') {
+          todos.push(input.value.trim());
+        }
+      });
+
+      const todayData = { date: date, todos: todos, data: { ...fields } };
+      let workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+      // 檢查是否已有當天資料
+      const idx = workLogs.findIndex(log => log.date === date);
+      if (idx >= 0) {
+        workLogs[idx] = todayData;
+      } else {
+        workLogs.push(todayData);
+      }
+      localStorage.setItem('workLogs', JSON.stringify(workLogs));
 
       alert('今日工作已保存');
       updatePreview(true);
-      copyPreviewText();
+      copyPreviewText();  // 一鍵複製更新後內容
     });
 
-    document.getElementById('reset-month-btn').addEventListener('click',()=>{
-      if(confirm('確定要開始新月份嗎？將清除所有紀錄。')){
+    // 新月份開始
+    document.getElementById('reset-month-btn').addEventListener('click', () => {
+      if (confirm('確定要開始新月份嗎？將清除所有紀錄。')) {
         localStorage.removeItem('workLogs');
-        for(let f in fields){fields[f]=0;updateDailyDisplay(f);}
-        todoListEl.innerHTML='';
+        for (let f in fields) {
+          fields[f] = 0;
+          updateDailyDisplay(f);
+        }
+        todoListEl.innerHTML = '';
         updatePreview(true);
         alert('已清除紀錄，開始新月份的統計。');
       }
     });
 
-    function loadDayData(date){
-      const workLogs=JSON.parse(localStorage.getItem('workLogs'))||[];
-      const log=workLogs.find(l=>l.date===date);
-      if(log){
-        for(let f in fields){fields[f]=log.data[f]||0;updateDailyDisplay(f);}
-        todoListEl.innerHTML='';
-        log.todos.forEach(t=>{addTodoItem(t);});
-      }else{
-        for(let f in fields){fields[f]=0;updateDailyDisplay(f);}
-        todoListEl.innerHTML='';
-      }
-    }
-
-    function calculateMonthlyTotals(){
-      const monthlyTotals={inPregnant:0,inMember:0,inLeave:0,inLeave2m:0,cocospa:0,paidRegular:0,paidFollow:0,newborn:0,midmonth:0,midmonthGroup:0,oneFix:0,mv:0};
-      const workLogs=JSON.parse(localStorage.getItem('workLogs'))||[];
-      const currentMonth=(new Date()).getMonth();
-
-      workLogs.forEach(log=>{
-        const logDate=new Date(log.date);
-        if(logDate.getMonth()===currentMonth){
-          for(let f in monthlyTotals){
-            monthlyTotals[f]+=(log.data[f]||0);
-          }
+    // 載入指定日期資料
+    function loadDayData(date) {
+      const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+      const log = workLogs.find(l => l.date === date);
+      if (log) {
+        for (let f in fields) {
+          fields[f] = log.data[f] || 0;
+          updateDailyDisplay(f);
         }
-      });
-
-      let total=0;
-      for(let f in monthlyTotals){
-        if(!excludeFromTotal.includes(f)){
-          total+=monthlyTotals[f];
+        todoListEl.innerHTML = '';
+        log.todos.forEach(t => {
+          addTodoItem(t);
+        });
+      } else {
+        // 沒有紀錄時，重置
+        for (let f in fields) {
+          fields[f] = 0;
+          updateDailyDisplay(f);
         }
+        todoListEl.innerHTML = '';
       }
-      return {monthlyTotals,total};
     }
 
-    function updatePreview(saved){
-      const date=document.getElementById('date').value||'未選擇日期';
-      const todos=[];
-      todoListEl.querySelectorAll('li').forEach(li=>{
-        const input=li.querySelector('input[type="text"]');
-        if(input&&input.value.trim()!==''){todos.push(input.value.trim());}
-      });
+    // 查看歷史紀錄
+    document.getElementById('history-btn').addEventListener('click', showHistory);
+    // 關閉 Modal
+    document.getElementById('close-modal').addEventListener('click', closeHistoryModal);
 
-      let result={monthlyTotals:{},total:0};
-      if(saved){
-        result=calculateMonthlyTotals();
-        displayMonthlyStats(result.monthlyTotals,result.total);
-      }else{
-        result.monthlyTotals=readMonthlyFromUI();
-        result.total=parseInt(document.getElementById('monthly-total').textContent)||0;
-      }
+    function showHistory() {
+      const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+      const tbody = document.querySelector('#history-table tbody');
+      tbody.innerHTML = '';
 
-      const monthlyInfo=result.monthlyTotals;
-      const total=result.total;
+      workLogs.forEach(log => {
+        const tr = document.createElement('tr');
+        const dateTd = document.createElement('td');
+        dateTd.textContent = log.date;
 
-      let text=`${date}\n台南營業部/攝影課/浣熊\n\n`;
-
-      text+=`代辦事項：\n`;
-      if(todos.length>0){
-        todos.forEach((t,i)=>{text+=`${i+1}. ${t}\n`;});
-      }else{text+=`無\n`;}
-
-      function line(f){return `${fieldNames[f]}${fields[f]}/ 當月累積${(monthlyInfo[f]||0)}`;}
-
-      text+=`\n店內體驗拍攝：\n`;
-      text+=line('inPregnant')+'\n';
-      text+=line('inMember')+'\n';
-      text+=line('inLeave')+'\n';
-      text+=line('inLeave2m')+'\n';
-
-      text+=`\n${fieldNames.cocospa}${fields.cocospa}/ 當月累積${(monthlyInfo.cocospa||0)}\n`;
-
-      text+=`\n付費方案：\n`;
-      text+=line('paidRegular')+'\n';
-      text+=line('paidFollow')+'\n';
-
-      text+=`\n月中出機：\n`;
-      text+=line('newborn')+'\n';
-      text+=line('midmonth')+'\n';
-      text+=line('midmonthGroup')+'\n';
-
-      text+=`\n${fieldNames.oneFix}${fields.oneFix}/ 當月累積${(monthlyInfo.oneFix||0)}\n`;
-      text+=`${fieldNames.mv}${fields.mv}/ 當月累積${(monthlyInfo.mv||0)}\n`;
-
-      text+=`\n本月總場：${total}\n`;
-
-      document.getElementById('preview-text').value=text;
-    }
-
-    function readMonthlyFromUI(){
-      const ids=Object.keys(fields);
-      let monthlyData={};
-      ids.forEach(f=>{
-        const el=document.getElementById(f+'-monthly');
-        monthlyData[f]=el?parseInt(el.textContent)||0:0;
-      });
-      return monthlyData;
-    }
-
-    function displayMonthlyStats(monthlyTotals,total){
-      for(let f in monthlyTotals){
-        const monthlyEl=document.getElementById(f+'-monthly');
-        if(monthlyEl){monthlyEl.textContent=monthlyTotals[f];}
-      }
-      document.getElementById('monthly-total').textContent=total;
-    }
-
-    function copyPreviewText(){
-      const previewText=document.getElementById('preview-text');
-      previewText.select();
-      document.execCommand('copy');
-      alert('已複製更新後的文本至剪貼簿');
-    }
-
-    document.getElementById('history-btn').addEventListener('click',showHistory);
-    document.getElementById('close-modal').addEventListener('click',closeHistoryModal);
-
-    function showHistory(){
-      const workLogs=JSON.parse(localStorage.getItem('workLogs'))||[];
-      const tbody=document.querySelector('#history-table tbody');
-      tbody.innerHTML='';
-
-      workLogs.forEach(log=>{
-        const tr=document.createElement('tr');
-        const dateTd=document.createElement('td');
-        dateTd.textContent=log.date;
-        const actionTd=document.createElement('td');
-        const loadBtn=document.createElement('button');
-        loadBtn.textContent='載入';
-        loadBtn.addEventListener('click',()=>{
+        const actionTd = document.createElement('td');
+        const loadBtn = document.createElement('button');
+        loadBtn.textContent = '載入';
+        loadBtn.addEventListener('click', () => {
           loadHistoryData(log.date);
           closeHistoryModal();
         });
+
         actionTd.appendChild(loadBtn);
         tr.appendChild(dateTd);
         tr.appendChild(actionTd);
         tbody.appendChild(tr);
       });
 
-      document.getElementById('history-modal').style.display='block';
+      document.getElementById('history-modal').style.display = 'block';
     }
 
-    function closeHistoryModal(){
-      document.getElementById('history-modal').style.display='none';
+    function closeHistoryModal() {
+      document.getElementById('history-modal').style.display = 'none';
     }
 
-    function loadHistoryData(date){
-      const workLogs=JSON.parse(localStorage.getItem('workLogs'))||[];
-      const log=workLogs.find(l=>l.date===date);
-      if(!log)return;
+    function loadHistoryData(date) {
+      const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
+      const log = workLogs.find(l => l.date === date);
+      if (!log) return;
 
-      document.getElementById('date').value=log.date;
-      todoListEl.innerHTML='';
-      log.todos.forEach(t=>{addTodoItem(t);});
+      document.getElementById('date').value = log.date;
+      todoListEl.innerHTML = '';
+      log.todos.forEach(t => addTodoItem(t));
 
-      for(let f in fields){
-        fields[f]=log.data[f]||0;
+      for (let f in fields) {
+        fields[f] = log.data[f] || 0;
         updateDailyDisplay(f);
       }
-
       updatePreview(true);
     }
 
-    const previewPanel=document.getElementById('preview-panel');
-    const toggleBtn=document.getElementById('toggle-preview-btn');
-    toggleBtn.addEventListener('click',()=>{
+    // 預覽面板收合/展開
+    const previewPanel = document.getElementById('preview-panel');
+    const toggleBtn = document.getElementById('toggle-preview-btn');
+
+    toggleBtn.addEventListener('click', () => {
       previewPanel.classList.toggle('collapsed');
-      toggleBtn.textContent=previewPanel.classList.contains('collapsed')?'‹':'›';
+      toggleBtn.textContent = previewPanel.classList.contains('collapsed') ? '‹' : '›';
     });
 
+    // 一鍵複製按鈕
+    document.getElementById('copy-btn').addEventListener('click', copyPreviewText);
+
+    // 預設更新一次 (若有資料則會顯示當前累積)
     updatePreview(true);
   </script>
 </body>
