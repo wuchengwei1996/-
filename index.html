@@ -330,7 +330,7 @@
 
       <hr>
       <div class="section">
-        <h2>一修累積 & MV累積(不計入本月總場)</h2>
+        <h2>一修累積 & MV累積</h2>
         <div class="item">
           <label>一修累積(每日/當月)</label>
           <span id="oneFix-daily">0</span><span class="monthly" id="oneFix-monthly">0</span>
@@ -417,20 +417,28 @@
       mv: "MV累積"
     };
 
-    // 這裡指定「一修累積 (oneFix)」與「MV累積 (mv)」不計入本月總場
-    const excludeFromTotal = ["oneFix", "mv"];
+    // **只有**這些欄位會被計入「本月總場」
+    const includeInTotal = [
+      "inPregnant", 
+      "inMember", 
+      "inLeave", 
+      "inLeave2m", 
+      "cocospa", 
+      "paidRegular", 
+      "midmonthGroup"
+    ];
 
     // 代辦清單 <ul> element
     const todoListEl = document.getElementById('todo-list');
 
     // 根據欄位決定可選的按鈕範圍，包含「0」的選項
     function getNumberRangeForField(f) {
-      // catA：原本 1~4，現在改為 0~4
+      // catA：0~4
       const catA = [
         "inPregnant","inMember","inLeave","inLeave2m",
         "cocospa","paidRegular","paidFollow"
       ];
-      // catB：原本 1~6，現在改為 0~6
+      // catB：0~6
       const catB = ["newborn","midmonth","midmonthGroup"];
       if (catA.includes(f)) return [0, 4];
       if (catB.includes(f)) return [0, 6];
@@ -506,7 +514,7 @@
       }
     }
 
-    // 計算當月累積 (會排除 excludeFromTotal 裡的欄位)
+    // 計算當月累積 (僅對 includeInTotal 裏的欄位加總)
     function calculateMonthlyTotals(refMonth) {
       const monthlyTotals = {
         inPregnant: 0,
@@ -525,7 +533,7 @@
 
       const workLogs = JSON.parse(localStorage.getItem('workLogs')) || [];
 
-      // 遍歷所有紀錄，若 logDate 的月份 == refMonth，才計入加總
+      // 遍歷所有紀錄
       workLogs.forEach(log => {
         const logDate = new Date(log.date);
         if (logDate.getMonth() === refMonth) {
@@ -535,10 +543,11 @@
         }
       });
 
-      // 計算「本月總場」(排除一修、MV等不計入總場的欄位)
+      // 計算「本月總場」
+      // 只有 includeInTotal 裏的欄位才會加到 total
       let total = 0;
       for (let f in monthlyTotals) {
-        if (!excludeFromTotal.includes(f)) {
+        if (includeInTotal.includes(f)) {
           total += monthlyTotals[f];
         }
       }
@@ -561,7 +570,9 @@
     function displayMonthlyStats(monthlyTotals, total) {
       for (let f in monthlyTotals) {
         const monthlyEl = document.getElementById(f + '-monthly');
-        if (monthlyEl) monthlyEl.textContent = monthlyTotals[f];
+        if (monthlyEl) {
+          monthlyEl.textContent = monthlyTotals[f];
+        }
       }
       document.getElementById('monthly-total').textContent = total;
     }
